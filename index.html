@@ -33,7 +33,7 @@
     }
 
     .container {
-      max-width: 1500px;
+      max-width: 1300px;
       margin: 0 auto;
       padding: 15px;
     }
@@ -175,7 +175,7 @@
     }
 
     #capture {
-      width: 1500px;
+      width: 1300px;
       margin: 0 auto;
     }
 
@@ -534,18 +534,11 @@
       editable.addEventListener('input', saveToLocalStorage);
     });
     // **Add page refresh on row click**
- 
+  
     return row;
   }
-  // Refresh page on row click, only once
+  // Refresh page on row c
 
-function addRowClickRefresh(row) {
-  const clickHandler = () => {
-    window.location.reload(); // Refresh page
-    row.removeEventListener('click', clickHandler); // Ensure it only happens once
-  };
-  row.addEventListener('click', clickHandler);
-}
 
   // Remove a row
   function removeRow(rowId) {
