@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Train Quotation with Custom GST</title>
+  <title>Responsive Train Quotation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --header-yellow: #ffeb3b;
@@ -16,15 +17,25 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: #f3f3f3;
-      padding: 20px;
+      padding: 15px;
       margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      line-height: 1.6;
     }
 
     .container {
-      max-width: 100%;
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 15px;
     }
 
     .header {
@@ -40,6 +51,11 @@
     .header h1 {
       margin: 0;
       font-size: 28px;
+    }
+
+    .header p {
+      margin-top: 8px;
+      font-size: 16px;
     }
 
     .control-panel {
@@ -59,6 +75,9 @@
     .control-section h3 {
       margin-top: 0;
       color: #0d47a1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .input-group {
@@ -77,6 +96,7 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       width: 100px;
+      font-family: inherit;
     }
 
     .gst-slider-container {
@@ -119,6 +139,10 @@
       font-size: 16px;
       transition: all 0.3s;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
     }
 
     button:hover {
@@ -142,6 +166,10 @@
       background: var(--purple-color);
     }
 
+    #toggleTrainNo {
+      background: #607D8B;
+    }
+
     .calc-info {
       background: #e3f2fd;
       padding: 15px;
@@ -163,7 +191,7 @@
     table.quotation {
       border-collapse: collapse;
       width: 100%;
-      min-width: 800px;
+      min-width: 600px;
       table-layout: auto;
     }
 
@@ -172,6 +200,7 @@
       padding: 15px;
       vertical-align: top;
       font-size: 16px;
+      font-family: inherit;
     }
 
     table.quotation th {
@@ -184,6 +213,8 @@
       min-height: 24px;
       word-break: break-word;
       transition: background-color 0.3s;
+      font-family: inherit;
+      font-size: inherit;
     }
 
     .editable:focus {
@@ -207,6 +238,7 @@
     .summary-table td {
       border: 1px solid var(--border-gray);
       padding: 15px;
+      font-family: inherit;
     }
 
     .summary-table .yellow {
@@ -228,6 +260,10 @@
       color: #666;
     }
 
+    .hidden {
+      display: none;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 992px) {
       table.quotation th, table.quotation td {
@@ -238,11 +274,19 @@
 
     @media (max-width: 768px) {
       body {
-        padding: 15px;
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 10px;
       }
       
       .header h1 {
         font-size: 24px;
+      }
+      
+      .header p {
+        font-size: 14px;
       }
       
       .quote-card {
@@ -273,10 +317,21 @@
       button {
         width: 100%;
         margin-bottom: 8px;
+        justify-content: center;
       }
       
       .header h1 {
         font-size: 20px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .input-group input {
+        width: 100%;
+        margin-top: 5px;
       }
     }
 
@@ -299,11 +354,12 @@
 <div class="container">
   <div class="header">
     <h1>Train Food Quotation System</h1>
+    <p>Create and download quotations for train food services</p>
   </div>
 
   <div class="control-panel">
     <div class="control-section">
-      <h3>File Settings</h3>
+      <h3><i class="fas fa-file-signature"></i> File Settings</h3>
       <div class="input-group">
         <label for="filename">File Name:</label>
         <input type="text" id="filename" placeholder="Enter filename" value="Train_Quotation">
@@ -311,7 +367,7 @@
     </div>
     
     <div class="control-section">
-      <h3>GST Settings</h3>
+      <h3><i class="fas fa-percent"></i> GST Settings</h3>
       <div class="input-group">
         <label for="gstPercentage">GST Percentage:</label>
         <input type="number" id="gstPercentage" min="0" max="30" step="0.1" value="5">
@@ -323,10 +379,11 @@
   </div>
 
   <div class="toolbar">
-    <button id="downloadPng">Download PNG</button>
-    <button id="downloadPdf">Download PDF</button>
-    <button id="clearAll">Clear All Inputs</button>
-    <button id="saveData">Save Data</button>
+    <button id="downloadPng"><i class="fas fa-download"></i> Download PNG</button>
+    <button id="downloadPdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+    <button id="toggleTrainNo"><i class="fas fa-eye-slash"></i> Toggle Train No</button>
+    <button id="clearAll"><i class="fas fa-trash"></i> Clear All</button>
+    <button id="saveData"><i class="fas fa-save"></i> Save Data</button>
   </div>
 
   <div class="calc-info">
@@ -339,7 +396,7 @@
     <table class="quotation">
       <colgroup>
         <col style="width: 10%">
-        <col style="width: 10%">
+        <col style="width: 10%" id="trainNoColumn">
         <col style="width: 15%">
         <col style="width: 10%">
         <col style="width: 25%">
@@ -347,36 +404,40 @@
         <col style="width: 10%">
         <col style="width: 10%">
       </colgroup>
-      <tr>
-        <th>Date</th>
-        <th>Train no</th>
-        <th>Location</th>
-        <th>Time</th>
-        <th>Menu</th>
-        <th>Unit Pax</th>
-        <th>Unit Amount</th>
-        <th>Total amount</th>
-      </tr>
-      <tr>
-        <td class="editable" contenteditable="true" id="date">11-09-2025</td>
-        <td class="editable" contenteditable="true" id="trainNo">12833</td>
-        <td class="editable" contenteditable="true" id="location">Bhuswal JN</td>
-        <td class="editable" contenteditable="true" id="time">11:20 AM</td>
-        <td class="editable" contenteditable="true" id="menu">Mix veg , dal Fry , jeera rice , 4 roti , salad , pickle , tissue , spoon</td>
-        <td class="editable calc-input" contenteditable="true" data-calculation="pax" id="unitPax">80</td>
-        <td class="editable calc-input" contenteditable="true" data-calculation="amount" id="unitAmount">135</td>
-        <td class="calc-cell" id="total-amount">10800</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="train-no-header">Train no</th>
+          <th>Location</th>
+          <th>Time</th>
+          <th>Menu</th>
+          <th>Unit Pax</th>
+          <th>Unit Amount</th>
+          <th>Total amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="editable" contenteditable="true" id="date">11-09-2025</td>
+          <td class="editable train-no-cell" contenteditable="true" id="trainNo">12833</td>
+          <td class="editable" contenteditable="true" id="location">Bhuswal JN</td>
+          <td class="editable" contenteditable="true" id="time">11:20 AM</td>
+          <td class="editable" contenteditable="true" id="menu">Mix veg, dal Fry, jeera rice, 4 roti, salad, pickle, tissue, spoon</td>
+          <td class="editable calc-input" contenteditable="true" data-calculation="pax" id="unitPax">80</td>
+          <td class="editable calc-input" contenteditable="true" data-calculation="amount" id="unitAmount">135</td>
+          <td class="calc-cell" id="total-amount">10800.00</td>
+        </tr>
+      </tbody>
     </table>
 
     <table class="summary-table">
       <tr>
         <td class="yellow">GST <span id="gst-percentage-label">5</span>%</td>
-        <td id="gst-amount">540</td>
+        <td id="gst-amount">540.00</td>
       </tr>
       <tr>
         <td class="yellow">Final Amount</td>
-        <td id="final-amount">11340</td>
+        <td id="final-amount">11340.00</td>
       </tr>
     </table>
   </div>
@@ -401,6 +462,7 @@
   const gstDisplay = document.getElementById('gstDisplay');
   const gstPercentageLabel = document.getElementById('gst-percentage-label');
   const storageStatus = document.getElementById('storageStatus');
+  const toggleTrainNoBtn = document.getElementById('toggleTrainNo');
   
   // Get input fields for storage
   const dateEl = document.getElementById('date');
@@ -416,6 +478,9 @@
   const gstAmountEl = document.getElementById('gst-amount');
   const finalAmountEl = document.getElementById('final-amount');
 
+  // Track if train number column is visible
+  let isTrainNoVisible = true;
+
   // Save data to local storage
   function saveToLocalStorage() {
     const data = {
@@ -427,7 +492,8 @@
       unitPax: unitPaxEl.textContent,
       unitAmount: unitAmountEl.textContent,
       filename: filenameInput.value,
-      gstPercentage: gstPercentageInput.value
+      gstPercentage: gstPercentageInput.value,
+      isTrainNoVisible: isTrainNoVisible
     };
     
     localStorage.setItem('trainQuotationData', JSON.stringify(data));
@@ -464,6 +530,12 @@
         updateGstDisplay();
       }
       
+      // Load train number column visibility
+      if (data.hasOwnProperty('isTrainNoVisible')) {
+        isTrainNoVisible = data.isTrainNoVisible;
+        toggleTrainNoColumn(isTrainNoVisible);
+      }
+      
       calculateTotals();
     }
   }
@@ -472,6 +544,28 @@
   function updateGstDisplay() {
     gstDisplay.textContent = gstPercentageInput.value;
     gstPercentageLabel.textContent = gstPercentageInput.value;
+  }
+
+  // Toggle train number column visibility
+  function toggleTrainNoColumn(visible) {
+    const trainNoHeaders = document.querySelectorAll('.train-no-header');
+    const trainNoCells = document.querySelectorAll('.train-no-cell');
+    const trainNoColumn = document.getElementById('trainNoColumn');
+    
+    if (visible) {
+      trainNoHeaders.forEach(el => el.classList.remove('hidden'));
+      trainNoCells.forEach(el => el.classList.remove('hidden'));
+      trainNoColumn.style.display = 'table-column';
+      toggleTrainNoBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Train No';
+    } else {
+      trainNoHeaders.forEach(el => el.classList.add('hidden'));
+      trainNoCells.forEach(el => el.classList.add('hidden'));
+      trainNoColumn.style.display = 'none';
+      toggleTrainNoBtn.innerHTML = '<i class="fas fa-eye"></i> Show Train No';
+    }
+    
+    isTrainNoVisible = visible;
+    saveToLocalStorage();
   }
 
   // Function to calculate totals
@@ -504,9 +598,9 @@
     });
     
     // Reset calculated values
-    totalAmountEl.textContent = '0';
-    gstAmountEl.textContent = '0';
-    finalAmountEl.textContent = '0';
+    totalAmountEl.textContent = '0.00';
+    gstAmountEl.textContent = '0.00';
+    finalAmountEl.textContent = '0.00';
     
     filenameInput.value = 'Train_Quotation';
     gstPercentageInput.value = '5';
@@ -540,6 +634,13 @@
     const editables = document.querySelectorAll('.editable');
     editables.forEach(editable => {
       editable.addEventListener('input', saveToLocalStorage);
+      
+      // Handle paste event to remove formatting
+      editable.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+      });
     });
     
     // Filename input
@@ -550,25 +651,55 @@
     document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
     document.getElementById('clearAll').addEventListener('click', clearAllInputs);
     document.getElementById('saveData').addEventListener('click', saveToLocalStorage);
+    toggleTrainNoBtn.addEventListener('click', function() {
+      toggleTrainNoColumn(!isTrainNoVisible);
+    });
   }
 
   // Download PNG with custom filename
   async function downloadPNG() {
-    const canvas = await html2canvas(captureEl, {scale: 2});
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = filenameInput.value + '.png';
-    link.click();
+    try {
+      const canvas = await html2canvas(captureEl, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = filenameInput.value + '.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error generating PNG:', error);
+      alert('Error generating PNG. Please try again.');
+    }
   }
 
   // Download PDF with custom filename
   async function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const canvas = await html2canvas(captureEl, {scale: 2});
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('l', 'pt', [canvas.width, canvas.height]);
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(filenameInput.value + '.pdf');
+    try {
+      const { jsPDF } = window.jspdf;
+      const canvas = await html2canvas(captureEl, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate PDF dimensions to maintain aspect ratio
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const pdfWidth = imgWidth * 0.75;
+      const pdfHeight = imgHeight * 0.75;
+      
+      const pdf = new jsPDF('l', 'pt', [pdfWidth, pdfHeight]);
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(filenameInput.value + '.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
   }
 
   // Initialize the application
