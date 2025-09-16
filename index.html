@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Quotation with Custom GST</title>
+  <style>
+    :root {
+      --header-yellow: #ffeb3b;
+      --border-gray: #333;
+      --table-bg: #fff;
+      --primary-color: #2196F3;
+      --danger-color: #f44336;
+      --success-color: #4CAF50;
+      --purple-color: #9C27B0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f3f3f3;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary-color), #0d47a1);
+      color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .control-section {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 5px solid var(--primary-color);
+    }
+
+    .control-section h3 {
+      margin-top: 0;
+      color: #0d47a1;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .input-group label {
+      flex: 1;
+      font-weight: bold;
+    }
+
+    .input-group input {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100px;
+    }
+
+    .gst-slider-container {
+      margin-top: 10px;
+    }
+
+    .gst-slider {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #ddd;
+      outline: none;
+      border-radius: 4px;
+    }
+
+    .gst-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 20px;
+      border-radius: 6px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #downloadPng {
+      background: var(--success-color);
+    }
+
+    #downloadPdf {
+      background: #FF9800;
+    }
+
+    #clearAll {
+      background: var(--danger-color);
+    }
+
+    #saveData {
+      background: var(--purple-color);
+    }
+
+    .calc-info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 5px solid var(--primary-color);
+    }
+
+    /* Card area */
+    .quote-card {
+      background: var(--table-bg);
+      border: 2px solid var(--border-gray);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      overflow-x: auto;
+      border-radius: 10px;
+    }
+
+    table.quotation {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 800px;
+      table-layout: auto;
+    }
+
+    table.quotation th, table.quotation td {
+      border: 1px solid var(--border-gray);
+      padding: 15px;
+      vertical-align: top;
+      font-size: 16px;
+    }
+
+    table.quotation th {
+      background: var(--header-yellow);
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .editable {
+      min-height: 24px;
+      word-break: break-word;
+      transition: background-color 0.3s;
+    }
+
+    .editable:focus {
+      outline: 2px dashed var(--primary-color);
+      background-color: #f5f5f5;
+    }
+
+    .calc-cell {
+      background-color: #f1f8e9;
+      font-weight: bold;
+    }
+
+    .summary-table {
+      margin-top: 25px;
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 500px;
+      margin-left: auto;
+    }
+
+    .summary-table td {
+      border: 1px solid var(--border-gray);
+      padding: 15px;
+    }
+
+    .summary-table .yellow {
+      background: var(--header-yellow);
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .storage-status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      table.quotation th, table.quotation td {
+        padding: 12px;
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+      
+      .header h1 {
+        font-size: 24px;
+      }
+      
+      .quote-card {
+        padding: 15px;
+      }
+      
+      table.quotation th, table.quotation td {
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      button {
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+      
+      .control-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      button {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+    }
+
+    @media print {
+      body { 
+        padding: 0; 
+        background: white;
+      }
+      .toolbar, .control-panel, .calc-info { 
+        display: none; 
+      }
+      .quote-card {
+        box-shadow: none;
+        border: 1px solid #000;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Train Food Quotation System</h1>
+  </div>
+
+  <div class="control-panel">
+    <div class="control-section">
+      <h3>File Settings</h3>
+      <div class="input-group">
+        <label for="filename">File Name:</label>
+        <input type="text" id="filename" placeholder="Enter filename" value="Train_Quotation">
+      </div>
+    </div>
+    
+    <div class="control-section">
+      <h3>GST Settings</h3>
+      <div class="input-group">
+        <label for="gstPercentage">GST Percentage:</label>
+        <input type="number" id="gstPercentage" min="0" max="30" step="0.1" value="5">
+      </div>
+      <div class="gst-slider-container">
+        <input type="range" id="gstSlider" class="gst-slider" min="0" max="30" step="0.1" value="5">
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button id="downloadPng">Download PNG</button>
+    <button id="downloadPdf">Download PDF</button>
+    <button id="clearAll">Clear All Inputs</button>
+    <button id="saveData">Save Data</button>
+  </div>
+
+  <div class="calc-info">
+    <strong>Calculation Info:</strong> Total Amount = Unit Pax × Unit Amount | GST = <span id="gstDisplay">5</span>% of Total Amount | Final Amount = Total Amount + GST
+    <br>
+    <strong>Auto-Save:</strong> Data is automatically saved to your browser's local storage.
+  </div>
+
+  <div id="capture" class="quote-card">
+    <table class="quotation">
+      <colgroup>
+        <col style="width: 10%">
+        <col style="width: 10%">
+        <col style="width: 15%">
+        <col style="width: 10%">
+        <col style="width: 25%">
+        <col style="width: 10%">
+        <col style="width: 10%">
+        <col style="width: 10%">
+      </colgroup>
+      <tr>
+        <th>Date</th>
+        <th>Train no</th>
+        <th>Location</th>
+        <th>Time</th>
+        <th>Menu</th>
+        <th>Unit Pax</th>
+        <th>Unit Amount</th>
+        <th>Total amount</th>
+      </tr>
+      <tr>
+        <td class="editable" contenteditable="true" id="date">11-09-2025</td>
+        <td class="editable" contenteditable="true" id="trainNo">12833</td>
+        <td class="editable" contenteditable="true" id="location">Bhuswal JN</td>
+        <td class="editable" contenteditable="true" id="time">11:20 AM</td>
+        <td class="editable" contenteditable="true" id="menu">Mix veg , dal Fry , jeera rice , 4 roti , salad , pickle , tissue , spoon</td>
+        <td class="editable calc-input" contenteditable="true" data-calculation="pax" id="unitPax">80</td>
+        <td class="editable calc-input" contenteditable="true" data-calculation="amount" id="unitAmount">135</td>
+        <td class="calc-cell" id="total-amount">10800</td>
+      </tr>
+    </table>
+
+    <table class="summary-table">
+      <tr>
+        <td class="yellow">GST <span id="gst-percentage-label">5</span>%</td>
+        <td id="gst-amount">540</td>
+      </tr>
+      <tr>
+        <td class="yellow">Final Amount</td>
+        <td id="final-amount">11340</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="storage-status" id="storageStatus">
+    Data saved to local storage. It will be available when you return.
+  </div>
+
+  <div class="footer">
+    <p>© 2023 Train Quotation System | Automatically calculates totals and saves your data</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  // Get DOM elements
+  const captureEl = document.getElementById('capture');
+  const filenameInput = document.getElementById('filename');
+  const gstPercentageInput = document.getElementById('gstPercentage');
+  const gstSlider = document.getElementById('gstSlider');
+  const gstDisplay = document.getElementById('gstDisplay');
+  const gstPercentageLabel = document.getElementById('gst-percentage-label');
+  const storageStatus = document.getElementById('storageStatus');
+  
+  // Get input fields for storage
+  const dateEl = document.getElementById('date');
+  const trainNoEl = document.getElementById('trainNo');
+  const locationEl = document.getElementById('location');
+  const timeEl = document.getElementById('time');
+  const menuEl = document.getElementById('menu');
+  const unitPaxEl = document.getElementById('unitPax');
+  const unitAmountEl = document.getElementById('unitAmount');
+  
+  // Get calculation elements
+  const totalAmountEl = document.getElementById('total-amount');
+  const gstAmountEl = document.getElementById('gst-amount');
+  const finalAmountEl = document.getElementById('final-amount');
+
+  // Save data to local storage
+  function saveToLocalStorage() {
+    const data = {
+      date: dateEl.textContent,
+      trainNo: trainNoEl.textContent,
+      location: locationEl.textContent,
+      time: timeEl.textContent,
+      menu: menuEl.textContent,
+      unitPax: unitPaxEl.textContent,
+      unitAmount: unitAmountEl.textContent,
+      filename: filenameInput.value,
+      gstPercentage: gstPercentageInput.value
+    };
+    
+    localStorage.setItem('trainQuotationData', JSON.stringify(data));
+    
+    // Show status message
+    storageStatus.textContent = 'Data saved to local storage at ' + new Date().toLocaleTimeString();
+    storageStatus.style.color = '#4CAF50';
+    
+    // Hide status after 3 seconds
+    setTimeout(() => {
+      storageStatus.style.color = '#666';
+    }, 3000);
+  }
+
+  // Load data from local storage
+  function loadFromLocalStorage() {
+    const savedData = localStorage.getItem('trainQuotationData');
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      
+      dateEl.textContent = data.date || '';
+      trainNoEl.textContent = data.trainNo || '';
+      locationEl.textContent = data.location || '';
+      timeEl.textContent = data.time || '';
+      menuEl.textContent = data.menu || '';
+      unitPaxEl.textContent = data.unitPax || '';
+      unitAmountEl.textContent = data.unitAmount || '';
+      filenameInput.value = data.filename || 'Train_Quotation';
+      
+      // Load GST percentage if available
+      if (data.gstPercentage) {
+        gstPercentageInput.value = data.gstPercentage;
+        gstSlider.value = data.gstPercentage;
+        updateGstDisplay();
+      }
+      
+      calculateTotals();
+    }
+  }
+
+  // Update GST display
+  function updateGstDisplay() {
+    gstDisplay.textContent = gstPercentageInput.value;
+    gstPercentageLabel.textContent = gstPercentageInput.value;
+  }
+
+  // Function to calculate totals
+  function calculateTotals() {
+    const unitPax = parseFloat(unitPaxEl.textContent) || 0;
+    const unitAmount = parseFloat(unitAmountEl.textContent) || 0;
+    const gstPercentage = parseFloat(gstPercentageInput.value) || 0;
+    
+    // Calculate total amount
+    const totalAmount = unitPax * unitAmount;
+    totalAmountEl.textContent = totalAmount.toFixed(2);
+    
+    // Calculate GST based on custom percentage
+    const gstAmount = totalAmount * (gstPercentage / 100);
+    gstAmountEl.textContent = gstAmount.toFixed(2);
+    
+    // Calculate final amount
+    const finalAmount = totalAmount + gstAmount;
+    finalAmountEl.textContent = finalAmount.toFixed(2);
+    
+    // Auto-save when calculations change
+    saveToLocalStorage();
+  }
+
+  // Clear all inputs function
+  function clearAllInputs() {
+    const editables = document.querySelectorAll('.editable');
+    editables.forEach(editable => {
+      editable.textContent = '';
+    });
+    
+    // Reset calculated values
+    totalAmountEl.textContent = '0';
+    gstAmountEl.textContent = '0';
+    finalAmountEl.textContent = '0';
+    
+    filenameInput.value = 'Train_Quotation';
+    gstPercentageInput.value = '5';
+    gstSlider.value = '5';
+    updateGstDisplay();
+    
+    // Save empty state
+    saveToLocalStorage();
+  }
+
+  // Set up event listeners
+  function setupEventListeners() {
+    // Calculation inputs
+    unitPaxEl.addEventListener('input', calculateTotals);
+    unitAmountEl.addEventListener('input', calculateTotals);
+    
+    // GST controls
+    gstPercentageInput.addEventListener('input', function() {
+      gstSlider.value = this.value;
+      updateGstDisplay();
+      calculateTotals();
+    });
+    
+    gstSlider.addEventListener('input', function() {
+      gstPercentageInput.value = this.value;
+      updateGstDisplay();
+      calculateTotals();
+    });
+    
+    // Other editable fields
+    const editables = document.querySelectorAll('.editable');
+    editables.forEach(editable => {
+      editable.addEventListener('input', saveToLocalStorage);
+    });
+    
+    // Filename input
+    filenameInput.addEventListener('input', saveToLocalStorage);
+    
+    // Buttons
+    document.getElementById('downloadPng').addEventListener('click', downloadPNG);
+    document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
+    document.getElementById('clearAll').addEventListener('click', clearAllInputs);
+    document.getElementById('saveData').addEventListener('click', saveToLocalStorage);
+  }
+
+  // Download PNG with custom filename
+  async function downloadPNG() {
+    const canvas = await html2canvas(captureEl, {scale: 2});
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = filenameInput.value + '.png';
+    link.click();
+  }
+
+  // Download PDF with custom filename
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const canvas = await html2canvas(captureEl, {scale: 2});
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('l', 'pt', [canvas.width, canvas.height]);
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(filenameInput.value + '.pdf');
+  }
+
+  // Initialize the application
+  function init() {
+    loadFromLocalStorage();
+    setupEventListeners();
+    updateGstDisplay();
+    
+    // Auto-save every 30 seconds in case user forgets
+    setInterval(saveToLocalStorage, 30000);
+  }
+
+  // Start the application
+  init();
+</script>
+</body>
+</html>
