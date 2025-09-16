@@ -33,7 +33,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 0 auto;
       padding: 15px;
     }
@@ -169,6 +169,14 @@
     #toggleTrainNo {
       background: #607D8B;
     }
+
+    /* capture */
+
+    #capture {
+  width: 1300px;   /* fix width */
+  margin: 0 auto;
+}
+
 
     .calc-info {
       background: #e3f2fd;
@@ -681,7 +689,7 @@
     try {
       const { jsPDF } = window.jspdf;
       const canvas = await html2canvas(captureEl, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         logging: false
       });
@@ -690,8 +698,7 @@
       // Calculate PDF dimensions to maintain aspect ratio
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const pdfWidth = imgWidth * 0.75;
-      const pdfHeight = imgHeight * 0.75;
+  
       
       const pdf = new jsPDF('l', 'pt', [pdfWidth, pdfHeight]);
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
