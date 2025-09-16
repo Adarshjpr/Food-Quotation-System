@@ -534,10 +534,11 @@
       editable.addEventListener('input', saveToLocalStorage);
     });
     // **Add page refresh on row click**
-  addRowClickRefresh(row);
+ 
     return row;
   }
   // Refresh page on row click, only once
+
 function addRowClickRefresh(row) {
   const clickHandler = () => {
     window.location.reload(); // Refresh page
@@ -545,7 +546,6 @@ function addRowClickRefresh(row) {
   };
   row.addEventListener('click', clickHandler);
 }
-
 
   // Remove a row
   function removeRow(rowId) {
