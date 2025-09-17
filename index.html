@@ -1,4 +1,4 @@
-` <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -14,6 +14,7 @@
       --danger-color: #f44336;
       --success-color: #4CAF50;
       --purple-color: #9C27B0;
+      --orange-color: #FF9800;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
@@ -33,7 +34,7 @@
     }
 
     .container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 15px;
     }
@@ -174,8 +175,12 @@
       background: var(--primary-color);
     }
 
+    #toggleAdvance {
+      background: #795548;
+    }
+
     #capture {
-      width: 1300px;
+      width: 1400px;
       margin: 0 auto;
     }
 
@@ -252,6 +257,12 @@
 
     .summary-table .yellow {
       background: var(--header-yellow);
+      font-weight: bold;
+    }
+
+    .remaining-amount {
+      background-color: #ffcccc;
+      color: #cc0000;
       font-weight: bold;
     }
 
@@ -396,6 +407,15 @@
         <input type="range" id="gstSlider" class="gst-slider" min="0" max="30" step="0.1" value="5">
       </div>
     </div>
+
+    <div class="control-section">
+      <h3><i class="fas fa-money-bill-wave"></i> Advance Payment</h3>
+      <div class="input-group">
+        <label for="advanceInput">Advance Amount:</label>
+        <input type="number" id="advanceInput" min="0" step="0.01" value="0">
+      </div>
+      <button id="applyAdvance"><i class="fas fa-check-circle"></i> Apply Advance</button>
+    </div>
   </div>
 
   <div class="toolbar">
@@ -403,12 +423,13 @@
     <button id="downloadPng"><i class="fas fa-download"></i> Download PNG</button>
     <button id="downloadPdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
     <button id="toggleTrainNo"><i class="fas fa-eye-slash"></i> Toggle Train No</button>
+    <button id="toggleAdvance"><i class="fas fa-money-bill-wave"></i> Toggle Advance Section</button>
     <button id="clearAll"><i class="fas fa-trash"></i> Clear All</button>
     <button id="saveData"><i class="fas fa-save"></i> Save Data</button>
   </div>
 
   <div class="calc-info">
-    <strong>Calculation Info:</strong> Total Amount = Unit Pax × Unit Amount | GST = <span id="gstDisplay">5</span>% of Total Amount | Final Amount = Total Amount + GST
+    <strong>Calculation Info:</strong> Total Amount = Unit Pax × Unit Amount | GST = <span id="gstDisplay">5</span>% of Total Amount | Final Amount = Total Amount + GST - Advance Amount
     <br>
     <strong>Auto-Save:</strong> Data is automatically saved to your browser's local storage.
   </div>
@@ -445,18 +466,28 @@
     </table>
 
     <table class="summary-table">
-      <tr>
-        <td class="yellow">Subtotal</td>
-        <td id="subtotal-amount">0.00</td>
-      </tr>
-      <tr>
-        <td class="yellow">GST <span id="gst-percentage-label">5</span>%</td>
-        <td id="gst-amount">0.00</td>
-      </tr>
-      <tr>
-        <td class="yellow">Final Amount</td>
-        <td id="final-amount">0.00</td>
-      </tr>
+      <tbody>
+        <tr>
+          <td class="yellow">Total amount</td>
+          <td id="subtotal-amount">0.00</td>
+        </tr>
+        <tr>
+          <td class="yellow">Gst amount <span id="gst-percentage-label">5</span>%</td>
+          <td id="gst-amount">0.00</td>
+        </tr>
+        <tr>
+          <td class="yellow">Grand amount</td>
+          <td id="final-amount">0.00</td>
+        </tr>
+        <tr id="advance-section">
+          <td class="yellow">Advance amount</td>
+          <td id="advance-display">0.00</td>
+        </tr>
+        <tr id="remaining-section">
+          <td class="yellow">Remaining amount</td>
+          <td id="remaining-amount" class="remaining-amount">0.00</td>
+        </tr>
+      </tbody>
     </table>
   </div>
 
@@ -481,48 +512,51 @@
   const gstPercentageLabel = document.getElementById('gst-percentage-label');
   const storageStatus = document.getElementById('storageStatus');
   const toggleTrainNoBtn = document.getElementById('toggleTrainNo');
+  const toggleAdvanceBtn = document.getElementById('toggleAdvance');
+  const applyAdvanceBtn = document.getElementById('applyAdvance');
+  const advanceInput = document.getElementById('advanceInput');
   const tableBody = document.getElementById('items-table-body');
   const addRowBtn = document.getElementById('addRow');
   
-  // Get calculation elements
   const subtotalAmountEl = document.getElementById('subtotal-amount');
   const gstAmountEl = document.getElementById('gst-amount');
   const finalAmountEl = document.getElementById('final-amount');
-
-  // Track if train number column is visible
+  const advanceDisplayEl = document.getElementById('advance-display');
+  const remainingAmountEl = document.getElementById('remaining-amount');
+  const advanceSection = document.getElementById('advance-section');
+  const remainingSection = document.getElementById('remaining-section');
+  
   let isTrainNoVisible = true;
-
-  // Row counter for unique IDs
+  let isAdvanceSectionVisible = true;
   let rowCount = 0;
+  let totalAdvance = 0;
 
-  // Create a new row
+  // Create new row
   function createNewRow() {
     rowCount++;
     const row = document.createElement('tr');
     row.id = `row-${rowCount}`;
     row.innerHTML = `
       <td class="remove-row" onclick="removeRow(${rowCount})"><i class="fas fa-times-circle"></i></td>
-      <td class="editable" contenteditable="true">11-09-2025</td>
-      <td class="editable train-no-cell" contenteditable="true">12833</td>
-      <td class="editable" contenteditable="true">Bhuswal JN</td>
-      <td class="editable" contenteditable="true">11:20 AM</td>
-      <td class="editable" contenteditable="true">Mix veg, dal Fry, jeera rice, 4 roti, salad, pickle, tissue, spoon</td>
-      <td class="editable calc-input" contenteditable="true" data-calculation="pax">80</td>
-      <td class="editable calc-input" contenteditable="true" data-calculation="amount">135</td>
-      <td class="calc-cell row-total">10800.00</td>
+      <td class="editable" contenteditable="true">17-09-2025</td>
+      <td class="editable train-no-cell" contenteditable="true"></td>
+      <td class="editable" contenteditable="true"></td>
+      <td class="editable" contenteditable="true"></td>
+      <td class="editable" contenteditable="true"></td>
+      <td class="editable calc-input" contenteditable="true" data-calculation="pax">0</td>
+      <td class="editable calc-input" contenteditable="true" data-calculation="amount">0</td>
+      <td class="calc-cell row-total">0.00</td>
     `;
-    
-    // Add event listeners to the new row
+
     const paxInput = row.querySelector('[data-calculation="pax"]');
     const amountInput = row.querySelector('[data-calculation="amount"]');
-    
+
     paxInput.addEventListener('input', calculateRowTotal);
     amountInput.addEventListener('input', calculateRowTotal);
-    
+
     paxInput.addEventListener('focus', clearIfZero);
     amountInput.addEventListener('focus', clearIfZero);
-    
-    // Handle paste event to remove formatting
+
     const editables = row.querySelectorAll('.editable');
     editables.forEach(editable => {
       editable.addEventListener('paste', function(e) {
@@ -530,77 +564,91 @@
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
         document.execCommand('insertText', false, text);
       });
-      
       editable.addEventListener('input', saveToLocalStorage);
     });
-    // **Add page refresh on row click**
-  
+
     return row;
   }
-  // Refresh page on row c
 
-
-  // Remove a row
   function removeRow(rowId) {
     const row = document.getElementById(`row-${rowId}`);
     if (row && tableBody.children.length > 1) {
       row.remove();
       calculateAllTotals();
       saveToLocalStorage();
-    } else if (tableBody.children.length === 1) {
-      alert("You need to have at least one row in the quotation.");
+    } else {
+      alert("You need at least one row.");
     }
   }
 
-  // Clear input if it's zero when focused
   function clearIfZero(e) {
-    if (e.target.textContent === '0') {
+    if (e.target.textContent.trim() === '0') {
       e.target.textContent = '';
     }
   }
 
-  // Calculate total for a single row
   function calculateRowTotal() {
     const row = this.closest('tr');
     const paxCell = row.querySelector('[data-calculation="pax"]');
     const amountCell = row.querySelector('[data-calculation="amount"]');
     const totalCell = row.querySelector('.row-total');
-    
+
     const pax = parseFloat(paxCell.textContent) || 0;
     const amount = parseFloat(amountCell.textContent) || 0;
-    
-    const total = pax * amount;
-    totalCell.textContent = total.toFixed(2);
-    
+
+    totalCell.textContent = (pax * amount).toFixed(2);
+
     calculateAllTotals();
   }
 
-  // Calculate all totals including GST and final amount
-  function calculateAllTotals() {
+  function rowTotalsAmount() {
     let subtotal = 0;
-    const rowTotals = document.querySelectorAll('.row-total');
-    
-    rowTotals.forEach(cell => {
+    document.querySelectorAll('.row-total').forEach(cell => {
       subtotal += parseFloat(cell.textContent) || 0;
     });
-    
+    return subtotal;
+  }
+
+  function calculateAllTotals() {
+    const subtotal = rowTotalsAmount();
     const gstPercentage = parseFloat(gstPercentageInput.value) || 0;
     const gstAmount = subtotal * (gstPercentage / 100);
-    const finalAmount = subtotal + gstAmount;
-    
+    const grandTotal = subtotal + gstAmount;
+    const remainingAmount = grandTotal - totalAdvance;
+
     subtotalAmountEl.textContent = subtotal.toFixed(2);
     gstAmountEl.textContent = gstAmount.toFixed(2);
-    finalAmountEl.textContent = finalAmount.toFixed(2);
+    finalAmountEl.textContent = grandTotal.toFixed(2);
+    advanceDisplayEl.textContent = totalAdvance.toFixed(2);
+    remainingAmountEl.textContent = remainingAmount.toFixed(2);
+
+    saveToLocalStorage();
+  }
+
+  function applyAdvanceAmount() {
+    totalAdvance = parseFloat(advanceInput.value) || 0;
+    calculateAllTotals();
+  }
+
+  function toggleAdvanceSection() {
+    isAdvanceSectionVisible = !isAdvanceSectionVisible;
+    
+    if (isAdvanceSectionVisible) {
+      advanceSection.style.display = 'table-row';
+      remainingSection.style.display = 'table-row';
+      toggleAdvanceBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Hide Advance Section';
+    } else {
+      advanceSection.style.display = 'none';
+      remainingSection.style.display = 'none';
+      toggleAdvanceBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Show Advance Section';
+    }
     
     saveToLocalStorage();
   }
 
-  // Save data to local storage
   function saveToLocalStorage() {
     const rows = [];
-    const rowElements = tableBody.querySelectorAll('tr');
-    
-    rowElements.forEach(row => {
+    tableBody.querySelectorAll('tr').forEach(row => {
       const cells = row.querySelectorAll('.editable');
       rows.push({
         date: cells[0].textContent,
@@ -612,41 +660,35 @@
         unitAmount: cells[6].textContent
       });
     });
-    
+
     const data = {
       rows: rows,
       filename: filenameInput.value,
       gstPercentage: gstPercentageInput.value,
-      isTrainNoVisible: isTrainNoVisible
+      isTrainNoVisible: isTrainNoVisible,
+      isAdvanceSectionVisible: isAdvanceSectionVisible,
+      totalAdvance: totalAdvance
     };
-    
+
     localStorage.setItem('trainQuotationData', JSON.stringify(data));
-    
-    // Show status message
-    storageStatus.textContent = 'Data saved to local storage at ' + new Date().toLocaleTimeString();
+
+    storageStatus.textContent = 'Data saved at ' + new Date().toLocaleTimeString();
     storageStatus.style.color = '#4CAF50';
-    
-    // Hide status after 3 seconds
-    setTimeout(() => {
-      storageStatus.style.color = '#666';
-    }, 3000);
+    setTimeout(() => { storageStatus.style.color = '#666'; }, 3000);
   }
 
-  // Load data from local storage
   function loadFromLocalStorage() {
     const savedData = localStorage.getItem('trainQuotationData');
     if (savedData) {
       const data = JSON.parse(savedData);
-      
-      // Clear existing rows (except the default one)
+
       tableBody.innerHTML = '';
-      
-      // Add rows from saved data
+      rowCount = 0;
+
       if (data.rows && data.rows.length > 0) {
         data.rows.forEach(rowData => {
           const newRow = createNewRow();
           const cells = newRow.querySelectorAll('.editable');
-          
           cells[0].textContent = rowData.date || '';
           cells[1].textContent = rowData.trainNo || '';
           cells[2].textContent = rowData.location || '';
@@ -654,115 +696,81 @@
           cells[4].textContent = rowData.menu || '';
           cells[5].textContent = rowData.unitPax || '';
           cells[6].textContent = rowData.unitAmount || '';
-          
           tableBody.appendChild(newRow);
         });
       } else {
-        // Add a default row if no saved rows
         tableBody.appendChild(createNewRow());
       }
-      
-      // Load other settings
+
       filenameInput.value = data.filename || 'Train_Quotation';
-      
-      if (data.gstPercentage) {
-        gstPercentageInput.value = data.gstPercentage;
-        gstSlider.value = data.gstPercentage;
-        updateGstDisplay();
-      }
-      
-      // Load train number column visibility
-      if (data.hasOwnProperty('isTrainNoVisible')) {
-        isTrainNoVisible = data.isTrainNoVisible;
-        toggleTrainNoColumn(isTrainNoVisible);
-      }
-      
+      gstPercentageInput.value = data.gstPercentage || '5';
+      gstSlider.value = data.gstPercentage || '5';
+      updateGstDisplay();
+
+      isTrainNoVisible = data.hasOwnProperty('isTrainNoVisible') ? data.isTrainNoVisible : true;
+      toggleTrainNoColumn(isTrainNoVisible);
+
+      isAdvanceSectionVisible = data.hasOwnProperty('isAdvanceSectionVisible') ? data.isAdvanceSectionVisible : true;
+      toggleAdvanceSectionDisplay(isAdvanceSectionVisible);
+
+      totalAdvance = data.totalAdvance || 0;
+      advanceInput.value = totalAdvance;
+
       calculateAllTotals();
     } else {
-      // Add a default row if no saved data
       tableBody.appendChild(createNewRow());
     }
   }
 
-  // Update GST display
   function updateGstDisplay() {
     gstDisplay.textContent = gstPercentageInput.value;
     gstPercentageLabel.textContent = gstPercentageInput.value;
   }
 
-  // Toggle train number column visibility
   function toggleTrainNoColumn(visible) {
-    const trainNoHeaders = document.querySelectorAll('.train-no-header');
-    const trainNoCells = document.querySelectorAll('.train-no-cell');
-    const trainNoColumn = document.getElementById('trainNoColumn');
-    
+    const headers = document.querySelectorAll('.train-no-header');
+    const cells = document.querySelectorAll('.train-no-cell');
+    const col = document.getElementById('trainNoColumn');
+
     if (visible) {
-      trainNoHeaders.forEach(el => el.classList.remove('hidden'));
-      trainNoCells.forEach(el => el.classList.remove('hidden'));
-      trainNoColumn.style.display = 'table-column';
+      headers.forEach(h => h.classList.remove('hidden'));
+      cells.forEach(c => c.classList.remove('hidden'));
+      col.style.display = 'table-column';
       toggleTrainNoBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Train No';
     } else {
-      trainNoHeaders.forEach(el => el.classList.add('hidden'));
-      trainNoCells.forEach(el => el.classList.add('hidden'));
-      trainNoColumn.style.display = 'none';
+      headers.forEach(h => h.classList.add('hidden'));
+      cells.forEach(c => c.classList.add('hidden'));
+      col.style.display = 'none';
       toggleTrainNoBtn.innerHTML = '<i class="fas fa-eye"></i> Show Train No';
     }
-    
     isTrainNoVisible = visible;
     saveToLocalStorage();
   }
 
-  // Clear all inputs function
+  function toggleAdvanceSectionDisplay(visible) {
+    if (visible) {
+      advanceSection.style.display = 'table-row';
+      remainingSection.style.display = 'table-row';
+      toggleAdvanceBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Hide Advance Section';
+    } else {
+      advanceSection.style.display = 'none';
+      remainingSection.style.display = 'none';
+      toggleAdvanceBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Show Advance Section';
+    }
+    isAdvanceSectionVisible = visible;
+  }
+
   function clearAllInputs() {
-    // Clear all rows
     tableBody.innerHTML = '';
-    
-    // Add one empty row
     tableBody.appendChild(createNewRow());
-    
-    // Reset calculated values
-    calculateAllTotals();
-    
+    totalAdvance = 0;
+    advanceInput.value = '0';
     filenameInput.value = 'Train_Quotation';
     gstPercentageInput.value = '5';
     gstSlider.value = '5';
     updateGstDisplay();
-    
-    // Save empty state
+    calculateAllTotals();
     saveToLocalStorage();
-  }
-
-  // Set up event listeners
-  function setupEventListeners() {
-    // GST controls
-    gstPercentageInput.addEventListener('input', function() {
-      gstSlider.value = this.value;
-      updateGstDisplay();
-      calculateAllTotals();
-    });
-    
-    gstSlider.addEventListener('input', function() {
-      gstPercentageInput.value = this.value;
-      updateGstDisplay();
-      calculateAllTotals();
-    });
-    
-    // Filename input
-    filenameInput.addEventListener('input', saveToLocalStorage);
-    
-    // Buttons
-    document.getElementById('downloadPng').addEventListener('click', downloadPNG);
-    document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
-    document.getElementById('clearAll').addEventListener('click', clearAllInputs);
-    document.getElementById('saveData').addEventListener('click', saveToLocalStorage);
-    toggleTrainNoBtn.addEventListener('click', function() {
-      toggleTrainNoColumn(!isTrainNoVisible);
-    });
-    
-    addRowBtn.addEventListener('click', function() {
-      tableBody.appendChild(createNewRow());
-      calculateAllTotals();
-    });
   }
 
   // Download PNG with custom filename
@@ -808,18 +816,47 @@
     }
   }
 
-  // Initialize the application
-  function init() {
-    loadFromLocalStorage();
-    setupEventListeners();
-    updateGstDisplay();
+  function setupEventListeners() {
+    gstPercentageInput.addEventListener('input', () => {
+      gstSlider.value = gstPercentageInput.value;
+      updateGstDisplay();
+      calculateAllTotals();
+    });
+
+    gstSlider.addEventListener('input', () => {
+      gstPercentageInput.value = gstSlider.value;
+      updateGstDisplay();
+      calculateAllTotals();
+    });
+
+    filenameInput.addEventListener('input', saveToLocalStorage);
+    advanceInput.addEventListener('input', saveToLocalStorage);
+
+    applyAdvanceBtn.addEventListener('click', applyAdvanceAmount);
     
-    // Auto-save every 30 seconds in case user forgets
-    setInterval(saveToLocalStorage, 30000);
+    toggleTrainNoBtn.addEventListener('click', () => {
+      toggleTrainNoColumn(!isTrainNoVisible);
+    });
+
+    toggleAdvanceBtn.addEventListener('click', () => {
+      toggleAdvanceSection();
+    });
+
+    document.getElementById('clearAll').addEventListener('click', clearAllInputs);
+    document.getElementById('addRow').addEventListener('click', () => {
+      tableBody.appendChild(createNewRow());
+      calculateAllTotals();
+    });
+
+    document.getElementById('downloadPng').addEventListener('click', downloadPNG);
+    document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
   }
 
-  // Start the application
-  init();
+  window.addEventListener('load', () => {
+    loadFromLocalStorage();
+    setupEventListeners();
+  });
 </script>
+
 </body>
 </html>
